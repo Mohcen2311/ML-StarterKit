@@ -1,50 +1,37 @@
-import matplotlib.pyplot as plt
-import numpy as np
-import os
-import PIL
-import tensorflow as tf
-import pathlib
-import shutil
 from core.loggging import logger
 
+import torchvision
+class ExtractDataset:
+    input_dir = ""
+    train_data = None
+    test_data = None
 
-class FlowerExtract(object):
-    def __init__(self, dataset_url: str, data_dir: str):
-        if dataset_url is None or data_dir is None:
-            raise Exception("Please input right dataset_url and data_dir")
+    train_classes = None
+    train_targets = None
 
-        self.dataset_url = dataset_url
-        self.data_dir = data_dir
+    test_classes = None
+    test_targets = None
 
-    def run(self) -> str:
-        data_set_name = "flower_photos"
+    def __init__(self, input_dir=""):
+        self.input_dir = input_dir
 
-        processed_dir = os.path.join(self.data_dir, data_set_name)
+        data_base = torchvision.datasets.FashionMNIST(
+            f"{self.input_dir}/train", download=True, train=True
+        )
 
-        if os.path.exists(processed_dir):
-            logger.info('return processed dataset {}'.format(processed_dir))
-            return processed_dir
+        self.train_data = data_base.data
+        self.train_targets = data_base.targets
+        self.train_classes = data_base.classes
 
-        output_data_dir = tf.keras.utils.get_file(
-            data_set_name, origin=self.dataset_url, untar=True)
+        test_base = torchvision.datasets.FashionMNIST(
+            f"{self.input_dir}/test", download=True, train=False
+        )
 
-        output_data_dir = pathlib.Path(output_data_dir)
+        self.test_data = test_base.data
+        self.test_targets = test_base.targets
+        self.test_classes = test_base.classes
 
-        image_count = len(list(output_data_dir.glob('*/*.jpg')))
-        logger.info('collected: {}'.format(image_count))
-
-        shutil.move(output_data_dir.as_posix(), self.data_dir)
-
-        return os.path.join(self.data_dir, data_set_name)
+        logger.info('Train collected: {}'.format(self.train_data.size()))
+        logger.info('Test collected: {}'.format(self.test_data.size()))
 
 
-def process(dataset_url: str, data_dir: str) -> str:
-    ### prepare data independ with training ###
-    logger.info("PREPARE ---> Starting data preparation for training ...")
-    data_processor = FlowerExtract(dataset_url, data_dir)
-
-    processed_data_dir = data_processor.run()
-    logger.info(
-        'PREPARE ---> Processed training data dir: {}'.format(processed_data_dir))
-
-    return processed_data_dir
