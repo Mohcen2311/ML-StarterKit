@@ -1,7 +1,8 @@
 import os
 import nbformat as nbf
 
-
+# This script is used to convert the source code to a single jupyter notebook
+# while taking into account the order (of folders, and files in each folder)
 def convert_to_notebook(project_dir, main_file, folder_order, last_files=None):
     nb = nbf.v4.new_notebook()
 
@@ -44,14 +45,14 @@ def convert_to_notebook(project_dir, main_file, folder_order, last_files=None):
 
         add_code_cell(main_code)
 
-    with open("./src/result_notebook.ipynb", "w") as f:
+    with open("./src/cycleGAN.ipynb", "w") as f:
         nbf.write(nb, f)
 
 
 # Usage Example
 folder_order = ["preparation", "modeling"]
 last_files = {
-    "preparation": "extract.py",
+    "preparation": "transform.py",
     "modeling": "train.py",
 }
 convert_to_notebook("./src", "main.py", folder_order, last_files)
